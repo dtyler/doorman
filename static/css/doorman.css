@@ -1,3 +1,8 @@
 .highlight {
     background-color: rgb(224, 234, 241);
 }
+
+#data_container {
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+}

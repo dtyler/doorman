@@ -1,7 +1,8 @@
 from flask import Flask
 import flask
-import urllib2
 import yaml
+import copy
+import urllib2
 from boto.dynamodb2.table import Table
 import boto.dynamodb2
 import xml.etree.cElementTree as etree
@@ -14,7 +15,7 @@ configMap = []
 def hello_world():
     raw_data = fetch_current_config()
     
-    data = { 'key_codes' : raw_data.keys(),
+    data = { 
              'action_map': raw_data
            }
     return flask.render_template('home.html', data=data)
@@ -27,9 +28,14 @@ def fetch_current_config(table=None):
     if table == None:
         conn = boto.dynamodb2.connect_to_region(configMap['aws_region'])
         table = Table(u'doorman_keycodes', connection=conn)
-    entryMap = dict()
+    entryMap = []
     for item in table.scan():
-        entryMap[item.get('keycode')] = item.get('action')
+        entryMap.append( {
+                'keycode' : item['keycode'],
+                'action' : item['action'],
+                'name' : item.get('name')
+                })
+    print entryMap
     return entryMap
     
 if __name__ == '__main__':
