@@ -1,7 +1,7 @@
 from flask import Flask
 import flask
 import yaml
-import copy
+import json
 import urllib2
 from boto.dynamodb2.table import Table
 import boto.dynamodb2
@@ -14,24 +14,32 @@ configMap = []
 @app.route('/')
 def hello_world():
     raw_data = fetch_current_config()
-    
-    data = { 
-             'action_map': raw_data
-           }
-    return flask.render_template('home.html', data=data)
+    keycode_arr = [ x.get('keycode') for x in raw_data ]
+    finalMap = {
+        'action_map' : keycode_arr
+    }
+    return flask.render_template('home.html', data=finalMap)
 
 @app.route('/static/<path:filename>')
 def get_statics(filename):
     return flask.url_for('static', filename=filename)
 
+@app.route('/codeinfo/<int:keycode>')
+def return_entry_info(keycode):
+    raw_data = fetch_current_config()
+    for entry in raw_data:
+        if entry.get('keycode') != None:
+            return flask.render_template('code_div.html', data=entry)
+
 def fetch_current_config(table=None):
     if table == None:
+        print "Connecting to aws"
         conn = boto.dynamodb2.connect_to_region(configMap['aws_region'])
         table = Table(u'doorman_keycodes', connection=conn)
     entryMap = []
     for item in table.scan():
         entryMap.append( {
-                'keycode' : item['keycode'],
+                'keycode' : int(item['keycode'].to_integral_value()),
                 'action' : item['action'],
                 'name' : item.get('name')
                 })

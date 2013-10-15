@@ -1,8 +1,7 @@
-.highlight {
+.data_box {
     background-color: rgb(224, 234, 241);
-}
-
-#data_container {
-    padding-left: 1.5em;
-    padding-right: 1.5em;
+    padding: 1em;
+    margin: 1em;
+    border-radius: .4em;
+    box-shadow: .2em .2em 1em 0.1em #ccc;
 }
