@@ -1,13 +1,16 @@
+import time
 from flask import Flask
 import flask
 import yaml
 import json
 import urllib2
 from boto.dynamodb2.table import Table
+from boto.dynamodb2.items import Item
 import boto.dynamodb2
 import xml.etree.cElementTree as etree
 app = Flask(__name__)
 
+table = None
 configMap = []
 
 
@@ -31,9 +34,33 @@ def return_entry_info(keycode):
         if entry.get('keycode') != None:
             return flask.render_template('code_div.html', data=entry)
 
-def fetch_current_config(table=None):
+@app.route('/delete/<int:keycode_param>')
+def delete_entry(keycode_param):
+    try:
+        item = table.get_item( keycode=keycode_param )
+        item.delete()
+    except e:
+        print e
+        raise e
+
+@app.route('/add/<int:keycode_param>')
+def add_entry(keycode_param):
+    params = request.args
+    try:
+        item = Item(table, data= {
+            'keycode': keycode_param,
+            'action' : params['action']
+            'name' : params['name']
+        })
+    except KeyError as e:
+        # better error?
+        raise e
+    item.save()
+
+def fetch_current_config():
+    global table
     if table == None:
-        print "Connecting to aws"
+        print "Connecting to dynamodb"
         conn = boto.dynamodb2.connect_to_region(configMap['aws_region'])
         table = Table(u'doorman_keycodes', connection=conn)
     entryMap = []
@@ -48,4 +75,5 @@ def fetch_current_config(table=None):
     
 if __name__ == '__main__':
     configMap = yaml.load(open('config.yaml', 'r'))
+    fetch_current_config()
     app.run(host='0.0.0.0', debug=True)
