@@ -1,4 +1,3 @@
-import time
 from flask import Flask
 import flask
 import yaml
@@ -49,7 +48,7 @@ def add_entry(keycode_param):
     try:
         item = Item(table, data= {
             'keycode': keycode_param,
-            'action' : params['action']
+            'action' : params['action'],
             'name' : params['name']
         })
     except KeyError as e:
