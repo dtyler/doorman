@@ -5,6 +5,7 @@ import json
 import urllib2
 from boto.dynamodb2.table import Table
 from boto.dynamodb2.items import Item
+from flask import request
 import boto.dynamodb2
 import xml.etree.cElementTree as etree
 app = Flask(__name__)
@@ -42,19 +43,21 @@ def delete_entry(keycode_param):
         print e
         raise e
 
-@app.route('/add/<int:keycode_param>')
-def add_entry(keycode_param):
-    params = request.args
+@app.route('/code', methods=['POST'])
+def add_entry():
+    data = json.loads(request.data)
+    print data
     try:
         item = Item(table, data= {
-            'keycode': keycode_param,
-            'action' : params['action'],
-            'name' : params['name']
+            'keycode': int(data['keycode']),
+            'action' : 'http%3A%2F%2Fstatic.grantcohoe.com%2Fcloudbell%2Fconnect.xml',
+            'name' : data['name']
         })
     except KeyError as e:
         # better error?
         raise e
     item.save()
+    return flask.jsonify(data)
 
 def fetch_current_config():
     global table

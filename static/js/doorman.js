@@ -1,4 +1,4 @@
-function setupHandlers(action_map) {
+function setupHandlers() {
     $("button[id^=submit]").click(function() {
         console.log("you clicked submit");
     });
@@ -6,19 +6,33 @@ function setupHandlers(action_map) {
         console.log("you clicked delete");
     });
     $("input[id^=new_add_btn]").attr('disabled','disabled');
-    $("input[id^=new_name], input[id^=new_keycode]").keyup(function(eventObject) {
+    $("form input[id^=name], input[id^=keycode]").keyup(function(eventObject) {
             var code_id = eventObject.target.id;
             var code_suffix = code_id.substring(code_id.indexOf("-")+1);
-            if( $("#new_name-"+code_suffix).val().trim() != "" && $("#new_keycode-"+code_suffix).val().trim() != "") { 
-                $("#new_add_btn-"+code_suffix).removeAttr('disabled');
+            if( $("#name").val().trim() != "" && $("#keycode").val().trim() != "") { 
+                $("#new_add_btn").removeAttr('disabled');
             } else {
-                $("#new_add_btn-"+code_suffix).attr('disabled','disabled');
+                $("#new_add_btn").attr('disabled','disabled');
             }
     });
-    $("input[id^=name-], input[id^=keyword]").keyup(function(eventObject) {
+    $("#codeListTargetDiv input[id^=name-], input[id^=keycode-]").keyup(function(eventObject) {
             var code_id = eventObject.target.id;
             var code_suffix = code_id.substring(code_id.indexOf("-")+1);
             $("#submit-"+code_suffix).removeAttr('disabled');
+    });
+    $('#new_add_btn').click( function() {
+        var newName = $("#name").val().trim();
+        var newKeycode = $("#keycode").val().trim();
+        $.post( '/code',
+            JSON.stringify({
+                name: newName,
+                keycode: newKeycode
+            }),
+            function success(data) { 
+                console.log("yay!");
+            }
+        );
+        return false;
     });
 }
 
@@ -30,10 +44,10 @@ function buildCodeListHTML(action_map) {
                     "/codeinfo/" + action_map[i],
                     function(data) {
                         $("#codeListTargetDiv").append(data);
+                        setupHandlers();
                     },
                     "text"
-                 );
+            );
         }
-        setupHandlers(action_map);
     }
 }
